@@ -1,0 +1,10 @@
+body {
+     margin: 0;
+     padding: 0;
+     background-color: #f0f0f0; /* Solid background color */
+     background-image: url('images/vintage-2714966_1920.jpg');
+     background-size: cover;
+     background-attachment: fixed; /* Prevents background from scrolling with content */
+     background-position: center;
+     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ }
