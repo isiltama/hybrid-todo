@@ -1,35 +1,55 @@
 <script>
     import '../style.css';
-
+    import { writable } from 'svelte/store';
+    
     let todoItem = '';
-    let urgent, someday;
-    let todoList = [];
+    let storedList;
+    let todoList = writable([]);
 
-    $: isDone = todoList.filter(item => item.done);
-    $: somedayList = todoList.filter(item => item.someday);
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        storedList = localStorage.getItem('storedList');
+        if(storedList) {
+            todoList.set(JSON.parse(storedList));
+        }
+    }
+
+    function updateList() {
+        localStorage.setItem('storedList', JSON.stringify($todoList));
+    }
+
+    $: isDone = $todoList.filter(item => item.done);
 
     function addToArray() {
         if (todoItem.trim() === '') {
             return;
         }
 
-        todoList = [...todoList, {
-            text: todoItem,
-            done: false,
-            urgent: urgent,
-            someday: someday
-        }];
-
+        todoList.update(list => {
+            const updatedList = [...list, {
+                text: todoItem,
+                done: false
+            }];
+            updateList();
+            return updatedList;
+        });
+        
         todoItem = '';
     }
 
     function removeThis(index) {
-        todoList.splice(index, 1);
-        todoList = [...todoList];
+        todoList.update(list => {
+            list.splice(index, 1);
+            updateList();
+            return list;
+        });
     }
 
     function clearDone() {
-        todoList = todoList.filter(item => !item.done);
+        todoList.update(list => {
+            const filteredList = list.filter(item => !item.done);
+            updateList();
+            return filteredList;
+        });
     }
 </script>
 
@@ -42,28 +62,20 @@
     </form>
 
     <ul class="todo-list">
-        {#each todoList as item, index}
-        <li class="{item.urgent ? 'urgent' : ''}">
-            <input type="checkbox" bind:checked={item.done}>
+        {#each $todoList as item, index}
+        <li>
+            <input type="checkbox" bind:checked={item.done} on:change={updateList}>
             <span class:done={item.done}>{item.text}</span>
-            <span on:click={() => removeThis(index)} class="remove" role="button" tabindex="0">🗑️</span> <!-- Using Unicode character for trash can emoji -->
+            <span on:click={() => removeThis(index)} class="remove" role="button" tabindex="0">🗑️</span>
         </li>
         {/each}
     </ul>
-
-    {#if somedayList.length > 0}
-    <h2>Someday</h2>
-    <ul class="someday-list">
-        {#each somedayList as item, index}
-        <li>{item.text}</li>
-        {/each}
-    </ul>
-    {/if}
 
     {#if isDone.length > 0}
     <button on:click={clearDone} class="clear-done">Remove Done</button>
     {/if}
 </div>
+
 
 <style>
     .container {
