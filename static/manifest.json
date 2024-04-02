@@ -1,0 +1,13 @@
+{
+    "name": "Your To Do List",
+    "start_url": "/",
+    "display": "fullscreen",
+    "icons": [
+      {
+        "src": "favicon.png",
+        "type": "image/png",
+        "sizes": "512x512"
+      }
+    ]
+  }
+  
