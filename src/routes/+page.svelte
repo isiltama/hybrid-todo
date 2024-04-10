@@ -1,4 +1,5 @@
 <script>
+    import { onMount } from 'svelte';
     import '../style.css';
     import { writable } from 'svelte/store';
 
@@ -6,15 +7,17 @@
     let storedList;
     let todoList = writable([]);
 
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    // Load saved list from local storage on component mount
+    onMount(() => {
         storedList = localStorage.getItem('storedList');
-        if (storedList) {
+        if(storedList) {
             todoList.set(JSON.parse(storedList));
         }
-    }
+    });
 
-    function updateList() {
-        localStorage.setItem('storedList', JSON.stringify($todoList));
+    // Function to update local storage with current list
+    function updateList(list) {
+        localStorage.setItem('storedList', JSON.stringify(list));
     }
 
     $: isDone = $todoList.filter(item => item.done);
@@ -29,7 +32,7 @@
                 text: todoItem,
                 done: false
             }];
-            updateList();
+            updateList(updatedList);
             return updatedList;
         });
 
@@ -39,7 +42,7 @@
     function removeThis(index) {
         todoList.update(list => {
             list.splice(index, 1);
-            updateList();
+            updateList(list);
             return list;
         });
     }
@@ -47,7 +50,7 @@
     function clearDone() {
         todoList.update(list => {
             const filteredList = list.filter(item => !item.done);
-            updateList();
+            updateList(filteredList);
             return filteredList;
         });
     }
@@ -64,7 +67,7 @@
     <ul class="todo-list">
         {#each $todoList as item, index}
         <li>
-            <input type="checkbox" bind:checked={item.done} on:change={updateList}>
+            <input type="checkbox" bind:checked={item.done} on:change={updateList($todoList)}>
             <span class:done={item.done}>{item.text}</span>
             <span on:click={() => removeThis(index)} class="remove" role="button" tabindex="0">🗑️</span>
         </li>
