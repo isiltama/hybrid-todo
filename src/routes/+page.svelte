@@ -1,14 +1,14 @@
 <script>
     import '../style.css';
     import { writable } from 'svelte/store';
-    
+
     let todoItem = '';
     let storedList;
     let todoList = writable([]);
 
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
         storedList = localStorage.getItem('storedList');
-        if(storedList) {
+        if (storedList) {
             todoList.set(JSON.parse(storedList));
         }
     }
@@ -32,7 +32,7 @@
             updateList();
             return updatedList;
         });
-        
+
         todoItem = '';
     }
 
@@ -54,10 +54,10 @@
 </script>
 
 <div class="container">
-    <h1>Your To Do List</h1>
+    <h1>Sh*t To Do</h1>
 
     <form on:submit|preventDefault={addToArray}>
-        <input type="text" placeholder="Add a new todo" bind:value={todoItem}>
+        <input type="text" placeholder="Add a new task" bind:value={todoItem}>
         <button type="submit">Add</button>
     </form>
 
@@ -72,10 +72,9 @@
     </ul>
 
     {#if isDone.length > 0}
-    <button on:click={clearDone} class="clear-done">Remove Done</button>
+    <button on:click={clearDone} class="clear-done">Remove Completed</button>
     {/if}
 </div>
-
 
 <style>
     .container {
@@ -137,11 +136,10 @@
         color: #999;
     }
 
-        li {
+    li {
         font-size: 1.5rem; /* Increase font size to make items more prominent */
         padding: 10px; /* Add padding for better spacing */
     }
-
 
     .remove {
         margin-left: auto;
@@ -158,7 +156,6 @@
         border-radius: 3px; /* Add a slight border radius for the box shape */
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); /* Add a smaller, more opaque shadow effect */
     }
-
 
     .clear-done {
         background-color: darkred;
