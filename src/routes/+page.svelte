@@ -1,9 +1,9 @@
 <script>
     import { onMount } from 'svelte';
-    import '../style.css';
     import { writable } from 'svelte/store';
 
     let todoItem = '';
+    let category = 'Personal'; // Declare category variable with default value
     let storedList;
     let todoList = writable([]);
 
@@ -22,6 +22,7 @@
 
     $: isDone = $todoList.filter(item => item.done);
 
+    // Add category to task
     function addToArray() {
         if (todoItem.trim() === '') {
             return;
@@ -30,6 +31,7 @@
         todoList.update(list => {
             const updatedList = [...list, {
                 text: todoItem,
+                category: category,
                 done: false
             }];
             updateList(updatedList);
@@ -54,45 +56,64 @@
             return filteredList;
         });
     }
+
+    function moveItemUp(index) {
+        if (index > 0) {
+            todoList.update(list => {
+                const tempList = [...list];
+                const temp = tempList[index];
+                tempList[index] = tempList[index - 1];
+                tempList[index - 1] = temp;
+                updateList(tempList);
+                return tempList;
+            });
+        }
+    }
+
+    function moveItemDown(index) {
+        if (index < $todoList.length - 1) {
+            todoList.update(list => {
+                const tempList = [...list];
+                const temp = tempList[index];
+                tempList[index] = tempList[index + 1];
+                tempList[index + 1] = temp;
+                updateList(tempList);
+                return tempList;
+            });
+        }
+    }
+
+    function editItem(index, newText) {
+        todoList.update(list => {
+            list[index].text = newText;
+            updateList(list);
+            return list;
+        });
+    }
 </script>
 
-<div class="container">
-    <h1>Sh*t To Do</h1>
-
-    <form on:submit|preventDefault={addToArray}>
-        <input type="text" placeholder="Add a new task" bind:value={todoItem}>
-        <button type="submit">Add</button>
-    </form>
-
-    <ul class="todo-list">
-        {#each $todoList as item, index}
-        <li>
-            <input type="checkbox" bind:checked={item.done} on:change={updateList($todoList)}>
-            <span class:done={item.done}>{item.text}</span>
-            <span on:click={() => removeThis(index)} class="remove" role="button" tabindex="0">🗑️</span>
-        </li>
-        {/each}
-    </ul>
-
-    {#if isDone.length > 0}
-    <button on:click={clearDone} class="clear-done">Remove Completed</button>
-    {/if}
-</div>
-
 <style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        background-color: #D2B48C; /* Vintage rustic background */
+        font-family: Arial, sans-serif;
+        color: #fff;
+        height: 100%; /* Ensure the body takes up the entire viewport height */
+    }
+
     .container {
         max-width: 600px;
         margin: 0 auto;
         padding: 20px;
-        color: #333;
+        background-color: #F5DEB3; /* Light tan background color */
+        border-radius: 10px; /* Optional: Add border radius for better appearance */
     }
 
     h1 {
         font-size: 2.5rem;
         margin-bottom: 20px;
         text-align: center;
-        color: #333;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     }
 
     form {
@@ -108,8 +129,16 @@
         font-size: 16px;
     }
 
+    select {
+        padding: 10px;
+        border: none;
+        border-radius: 0 5px 5px 0;
+        background-color: #fff;
+        font-size: 16px;
+    }
+
     button {
-        padding: 15px 30px;
+        padding: 10px 20px;
         border: none;
         background-color: #007bff;
         color: #fff;
@@ -140,44 +169,66 @@
     }
 
     li {
-        font-size: 1.5rem; /* Increase font size to make items more prominent */
-        padding: 10px; /* Add padding for better spacing */
+        font-size: 1.5rem;
+        padding: 10px;
     }
 
     .remove {
         margin-left: auto;
         color: darkred;
         cursor: pointer;
-        font-size: 24px; /* Increase font size */
-        background-color: rgba(255, 255, 255, 0.6); /* Increase opacity by changing the alpha value */
-        padding: 2px; /* Add padding for better visibility */
-        width: 26px; /* Set width to make the shape fit the emoji */
-        height: 26px; /* Set height to make the shape fit the emoji */
-        display: inline-flex; /* Use flexbox for alignment */
-        align-items: center; /* Center the emoji vertically */
-        justify-content: center; /* Center the emoji horizontally */
-        border-radius: 3px; /* Add a slight border radius for the box shape */
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); /* Add a smaller, more opaque shadow effect */
     }
 
-    .clear-done {
-        background-color: darkred;
-        color: #fff;
-        border: none;
-        padding: 15px 30px;
-        border-radius: 5px;
+    .edit {
+        margin-left: 10px;
+        color: #007bff;
         cursor: pointer;
-        margin-top: 20px;
-        transition: all 0.3s ease;
     }
 
-    .clear-done:hover {
-        background-color: #ad0000;
+    .category {
+        margin-left: 10px;
+        color: #999;
+        font-size: 14px;
     }
 
-    input[type="checkbox"] {
-        width: 20px; /* Increase width to make the checkbox bigger */
-        height: 20px; /* Increase height to make the checkbox bigger */
-        border-radius: 50%; /* Make the checkbox circular */
+    .up-down {
+        margin-left: 10px;
+        color: #007bff;
+        cursor: pointer;
     }
 </style>
+
+
+<div class="container">
+    <h1>Sh💩t To Do</h1>
+
+    <form on:submit|preventDefault={addToArray}>
+        <input type="text" placeholder="Add a new task" bind:value={todoItem}>
+        <select bind:value={category}>
+            <option value="Personal">Personal</option>
+            <option value="Work">Work</option>
+            <option value="Home">Home</option>
+        </select>
+        <button type="submit">Add</button>
+    </form>
+
+    <ul class="todo-list">
+        {#each $todoList as item, index}
+        <li>
+            <input type="checkbox" bind:checked={item.done} on:change={() => updateList($todoList)}>
+            <span class:done={item.done}>{item.text}</span>
+            <span class="category">{item.category}</span>
+            <span class="up-down" on:click={() => moveItemUp(index)}>&#9650;</span>
+            <span class="up-down" on:click={() => moveItemDown(index)}>&#9660;</span>
+            <span on:click={() => removeThis(index)} class="remove" role="button" tabindex="0">🗑️</span>
+            <span on:click={() => editItem(index, prompt('Edit task:', item.text))} class="edit" role="button" tabindex="0">✏️</span>
+        </li>
+        {/each}
+    </ul>
+
+    {#if isDone.length > 0}
+    <button on:click={clearDone}>Remove Completed</button>
+    {/if}
+</div>
+
+
